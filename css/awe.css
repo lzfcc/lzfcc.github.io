@@ -4,14 +4,14 @@
 @import url(http://fonts.googleapis.com/css?family=Source+Code+Pro);
 
 body{
-  color: #9fa4a4;
+  color: #7f9494;
   font: 15px Helvetica, Arial, sans-serif;
   line-height: 1.8em;
   background: #edf3f2 url(../images/bg-page.jpg);
 }
 
 a {
-  color: #9fa4a4;
+  color: #7f9494;
   text-decoration: none;
 }
 a:hover {
