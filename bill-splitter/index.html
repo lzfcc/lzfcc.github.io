@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bill Splitter</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        h1, h2, h3 {
+            text-align: center;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .item {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .item select, .item input {
+            flex: 1;
+            margin: 5px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        .item button {
+            margin-left: 10px;
+            padding: 10px 20px;
+            border: none;
+            background-color: #f44336;
+            color: white;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .item button:hover {
+            background-color: #d32f2f;
+        }
+        .add-button, .calculate-button {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: none;
+            background-color: #4CAF50;
+            color: white;
+            border-radius: 4px;
+            cursor: pointer;
+            text-align: center;
+        }
+        .add-button:hover, .calculate-button:hover {
+            background-color: #45a049;
+        }
+        #result {
+            margin-top: 20px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            background-color: #f9f9f9;
+        }
+        @media (max-width: 600px) {
+            .item {
+                flex-direction: column;
+            }
+            .item button {
+                margin-left: 0;
+                margin-top: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Bill Splitter</h1>
+        <h2>The group includes 4 persons: Liu, Ke, Ma, Tang</h2>
+        <div id="bill-splitter"></div>
+    </div>
+
+    <!-- Include React and ReactDOM from a CDN -->
+    <script src="https://unpkg.com/react/umd/react.development.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom/umd/react-dom.development.js" crossorigin></script>
+    <script src="https://unpkg.com/babel-standalone/babel.min.js"></script>
+
+    <!-- Your React code -->
+    <script type="text/babel">
+        const { useState } = React;
+
+        const initialData = [
+            { person: 'Tang', amount: '95', details: '麻辣烫外卖' },
+            { person: 'Ma', amount: '273', details: '费大厨' },
+            { person: 'Ma', amount: '82', details: '香锅外卖' },
+            { person: 'Ma', amount: '130', details: '便利蜂' },
+            { person: 'Liu', amount: '100', details: '滴水壶' },
+            { person: 'Tang', amount: '425', details: '金麦渔村' },
+            { person: 'Tang', amount: '723', details: '民宿' },
+            { person: 'Tang', amount: '956', details: '漂流' },
+            { person: 'Liu', amount: '290', details: '36号院午饭' },
+            { person: 'Ma', amount: '100', details: '高速' },
+            { person: 'Liu', amount: '259', details: '汽油' },
+            { person: 'Ke', amount: '886', details: '租车' },
+            { person: 'Tang', amount: '300', details: '沙胆彪' },
+        ]
+
+        const BillSplitter = () => {
+            const [items, setItems] = useState(initialData);
+            const [result, setResult] = useState('');
+
+            const persons = ['Liu', 'Ke', 'Ma', 'Tang'];
+
+            const addItem = () => {
+                setItems([...items, { person: 'Liu', amount: '', details: '' }]);
+            };
+
+            const deleteItem = (index) => {
+                const newItems = items.filter((_, i) => i !== index);
+                setItems(newItems);
+            };
+
+            const handleChange = (index, field, value) => {
+                const newItems = items.map((item, i) => 
+                    i === index ? { ...item, [field]: value } : item
+                );
+                setItems(newItems);
+            };
+
+            const calculate = () => {
+                const n = persons.length;
+                const graph = Array.from({ length: n }, () => Array(n).fill(0));
+                let total = 0
+                items.forEach(item => {
+                    const payerIndex = persons.indexOf(item.person);
+                    const amount = parseFloat(item.amount);
+                    const splitAmount = amount / n;
+                    total += amount;
+
+                    persons.forEach((_, i) => {
+                        if (i !== payerIndex) {
+                            graph[payerIndex][i] -= splitAmount;
+                            graph[i][payerIndex] += splitAmount;
+                        }
+                    });
+                    
+                    console.log('Graph:', JSON.stringify(graph));   
+                });
+
+                let resultText = 'Total amount: $' + total.toFixed(2) + '<br/><br/> Person average: $' + (total / n).toFixed(2) + '<br/><br/>';
+                for (let i = 0; i < n; i++) {
+                    for (let j = 0; j < n; j++) {
+                        if (graph[i][j] > 0) {
+                            resultText += `${persons[i]} owes ${persons[j]} $${graph[i][j].toFixed(2)}<br/>`;
+                        }
+                    }
+                }
+
+                setResult(resultText);
+            };
+
+            return (
+                <div>
+                    <button className="add-button" onClick={addItem}>Add Item</button>
+                    <div id="items">
+                        {items.map((item, index) => (
+                            <div key={index} className="item">
+                                <select 
+                                    value={item.person} 
+                                    onChange={(e) => handleChange(index, 'person', e.target.value)}
+                                >
+                                    {persons.map(person => (
+                                        <option key={person} value={person}>{person}</option>
+                                    ))}
+                                </select>
+                                <input 
+                                    type="number" 
+                                    placeholder="Amount" 
+                                    value={item.amount} 
+                                    onChange={(e) => handleChange(index, 'amount', e.target.value)}
+                                />
+                                <input 
+                                    type="text" 
+                                    placeholder="Details" 
+                                    value={item.details} 
+                                    onChange={(e) => handleChange(index, 'details', e.target.value)}
+                                />
+                                <button onClick={() => deleteItem(index)}>Delete</button>
+                            </div>
+                        ))}
+                    </div>
+                    <button className="calculate-button" onClick={calculate}>Calculate</button>
+                    <div id="result" dangerouslySetInnerHTML={{ __html: result }}></div>
+                </div>
+            );
+        };
+
+        ReactDOM.render(<BillSplitter />, document.getElementById('bill-splitter'));
+    </script>
+</body>
+</html>
